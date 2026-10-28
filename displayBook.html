@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Records Search</title>
+    <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    .card {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      max-width: 400px;
+    }
+    .error {
+      color: red;
+      margin-top: 20px;
+    }
+    </style>
+</head>
+<body>
+    <h2>Fetch and Display Book Records</h2>
+
+  <!-- Dropdown to select a book title -->
+  <label for="bookSelect">Select Book Title:</label>
+  <select id="bookSelect">
+    <option value="">-- Choose a book --</option>
+  </select>
+
+  <!-- Container for displaying book details or error message -->
+  <div id="bookDetails"></div>
+
+  <script>
+    // Replace with your actual GitHub raw JSON URL
+    const jsonUrl = 'https://raw.githubusercontent.com/musyriqulms-ops/WebDev/refs/heads/main/books.json';
+
+    let booksData = [];
+
+    // Fetch JSON data from GitHub on page load
+    fetch(jsonUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch JSON data');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Access the 'Books' array from the JSON object[cite: 2]
+        booksData = data.Books; 
+        populateSelectDropdown(booksData);
+      })
+      .catch(error => {
+        console.error('Error fetching JSON:', error);
+        document.getElementById('bookDetails').innerHTML = 
+          `<p class="error">Error loading book records.</p>`;
+      });
+
+    // Populate the dropdown with book titles
+    function populateSelectDropdown(books) {
+      const selectElement = document.getElementById('bookSelect');
+      books.forEach(book => {
+        const option = document.createElement('option');
+        option.value = book.title;
+        option.textContent = book.title;
+        selectElement.appendChild(option);
+      });
+    }
+
+    // Handle book selection
+    document.getElementById('bookSelect').addEventListener('change', function () {
+      const selectedTitle = this.value;
+      const detailsDiv = document.getElementById('bookDetails');
+
+      if (!selectedTitle) {
+        detailsDiv.innerHTML = '';
+        return;
+      }
+
+      // Find the selected book record in fetched JSON data
+      const selectedBook = booksData.find(book => book.title === selectedTitle);
+
+      // Display book details or appropriate message
+      if (selectedBook) {
+        detailsDiv.innerHTML = `
+          <div class="card">
+            <h3>${selectedBook.title}</h3>
+            <p><strong>Author:</strong> ${selectedBook.author}</p>
+            <p><strong>Publication Year:</strong> ${selectedBook.publicationYear}</p>
+            <p><strong>Genres:</strong> ${selectedBook.genres.join(', ')}</p>
+          </div>
+        `;
+      } else {
+        detailsDiv.innerHTML = `<p class="error">Book record not found.</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
